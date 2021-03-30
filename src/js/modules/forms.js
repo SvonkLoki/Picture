@@ -1,11 +1,10 @@
 'use strict';
 
-// import checkNumInputs from './checkNumInputs';
 const forms = () => {
     const form = document.querySelectorAll('form'),
-        inputs = document.querySelectorAll('input');
+        inputs = document.querySelectorAll('input'),
+        upload = document.querySelectorAll('[name="upload"]');
 
-    // checkNumInputs('[name="user_phone"]');
 
     const message = {
         loading: 'Загрузка',
@@ -33,7 +32,21 @@ const forms = () => {
         inputs.forEach(item => {
             item.value = '';
         });
+        upload.forEach(item => {
+            item.previousElementSibling.textContent = 'Файл не выбран';
+        })
     };
+
+    upload.forEach(item => {
+        item.addEventListener('input', () => {
+            console.log(item.files[0]);
+            let dots;
+            const arr = item.files[0].name.split('.');
+            arr[0].length > 5 ? dots = '...' : dots = '.';
+            const name = arr[0].substring(0, 5) + dots + arr[1];
+            item.previousElementSibling.textContent = name;
+        });
+    });
 
     form.forEach(item => {
         item.addEventListener('submit', (e) => {
@@ -41,8 +54,8 @@ const forms = () => {
 
             let statusMessage = document.createElement('div');
             statusMessage.classList.add('status');
-
             item.parentNode.appendChild(statusMessage);
+
             item.classList.add('animated', 'fadeOutUp');
 
             setTimeout(() => { item.style.display = 'none'; }, 400);
@@ -54,25 +67,30 @@ const forms = () => {
 
             let textMessage = document.createElement('div');
             textMessage.textContent = message.loading;
-            statusMessage.appendChild(statusImg);
+            statusMessage.appendChild(textMessage);
 
             const formData = new FormData(item);
             let api;
-            item.closest('.popup-design') ? api = path.designer : api = path.question;
+            item.closest('.popup-design') || item.classList.contains('calc_form') ? api = path.designer : api = path.question;
+            console.log(api);
 
-            postData('assets/server.php', formData)
+            postData(api, formData)
                 .then(res => {
                     console.log(res);
-                    statusMessage.textContent = message.success;
+                    statusImg.setAttribute('src', message.ok);
+                    textMessage.textContent = message.success;
                 })
                 .catch(() => {
-                    // console.log(res);
-                    statusMessage.textContent = message.failure;
+                    statusImg.setAttribute('src', message.fail);
+                    textMessage.textContent = message.failure;
                 })
                 .finally(() => {
                     clearInputs();
                     setTimeout(() => {
                         statusMessage.remove();
+                        item.style.display = 'block';
+                        item.classList.remove('fadeOutUp');
+                        item.classList.add('fadeInUp');
                     }, 5000);
                 });
         });
