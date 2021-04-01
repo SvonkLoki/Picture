@@ -30,7 +30,7 @@ const forms = () => {
         });
         upload.forEach(item => {
             item.previousElementSibling.textContent = 'Файл не выбран';
-        })
+        });
     };
 
     upload.forEach(item => {
@@ -67,9 +67,13 @@ const forms = () => {
 
             const formData = new FormData(item);
             let api;
+            if (item.classList.contains('calc_form')) {
+                formData.append('Result', document.querySelector('.calc-price').textContent);
+                // formData.append('Result', '123');
+            }
             item.closest('.popup-design') || item.classList.contains('calc_form') ? api = path.designer : api = path.question;
             console.log(api);
-
+            console.log(formData);
             postData(api, formData)
                 .then(res => {
                     console.log(res);
